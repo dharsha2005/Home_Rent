@@ -17,26 +17,22 @@ const razorpay = new Razorpay({
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 10000;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGO_URI, {
+// In your server.js, update the MongoDB connection to:
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/perundurai_rentals', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  ssl: true,
-  tlsAllowInvalidCertificates: false,
-});
-
-mongoose.connection.on('connected', () => {
+}).then(() => {
   console.log('Connected to MongoDB');
-});
-
-mongoose.connection.on('error', (err) => {
-  console.error('MongoDB connection error:', err);
+}).catch((err) => {
+  console.error('MongoDB connection error:', err.message);
+  process.exit(1); // Exit if no DB connection
 });
 
 // User Schema
