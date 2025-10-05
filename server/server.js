@@ -1,10 +1,12 @@
+// Load environment variables first
+require('dotenv').config({ path: '../.env' });
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { sendEmail } = require('./utils/emailService');
-const dotenv = require('dotenv');
 const Razorpay = require('razorpay');
 
 // Initialize Razorpay
@@ -13,26 +15,30 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-// Load environment variables
-dotenv.config();
-
 const app = express();
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
 // MongoDB Connection
-// In your server.js, update the MongoDB connection to:
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/perundurai_rentals', {
+if (!process.env.MONGODB_URI) {
+  console.error('MongoDB connection string is not defined in .env file');
+  process.exit(1);
+}
+
+mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-}).then(() => {
+});
+
+mongoose.connection.on('connected', () => {
   console.log('Connected to MongoDB');
-}).catch((err) => {
-  console.error('MongoDB connection error:', err.message);
-  process.exit(1); // Exit if no DB connection
+});
+
+mongoose.connection.on('error', (err) => {
+  console.error('MongoDB connection error:', err);
 });
 
 // User Schema
